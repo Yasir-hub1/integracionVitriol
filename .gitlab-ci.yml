@@ -1,0 +1,94 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  NODE_VERSION: "18"
+  PM2_APP_NAME: "back-vitriol-integra1"
+  DEPLOY_PATH: "/var/www/back-vitriol-integra1"
+
+cache:
+  paths:
+    - node_modules/
+  key: "$CI_COMMIT_REF_SLUG"
+
+.node_template: &node_template
+  image: node:${NODE_VERSION}-alpine
+  before_script:
+    - apk add --no-cache git
+    - echo "📦 Instalando dependencias..."
+    - npm install --omit=dev
+
+build_backend:
+  <<: *node_template
+  stage: build
+  script:
+    - echo "✅ Build backend exitoso"
+    - node -v
+    - npm -v
+  artifacts:
+    paths:
+      - node_modules/
+    expire_in: 1 hour
+  only:
+    - main
+
+deploy_backend:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh-client rsync git
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "$SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    - |
+      cat >> ~/.ssh/config << EOF
+      Host production
+        HostName $SERVER_HOST
+        User $SERVER_USER
+        Port 22
+        StrictHostKeyChecking no
+        UserKnownHostsFile /dev/null
+      EOF
+    - chmod 600 ~/.ssh/config
+
+  script:
+    - echo "📦 Enviando backend al servidor..."
+    - rsync -avz --delete --exclude='.env' --exclude='node_modules' ./ $SERVER_USER@$SERVER_HOST:$DEPLOY_PATH/
+
+    - ssh production << EOF
+        set -e
+        cd "$DEPLOY_PATH"
+
+        echo "🔧 Permisos..."
+        sudo chown -R $(whoami):$(whoami) .
+        sudo chmod -R 775 .
+
+        echo "📦 Instalando dependencias..."
+        npm install --omit=dev
+
+        echo "🚀 Iniciando con PM2..."
+        if pm2 describe "$PM2_APP_NAME" > /dev/null; then
+          pm2 restart "$PM2_APP_NAME"
+        else
+          pm2 start server.js --name "$PM2_APP_NAME"
+        fi
+
+        pm2 save
+        pm2 startup systemd -u $(whoami) --hp $(eval echo ~$USER)
+
+        echo "📊 PM2 status:"
+        pm2 status "$PM2_APP_NAME"
+      EOF
+
+  after_script:
+    - ssh-agent -k
+  only:
+    - main
+  when: manual
+  environment:
+    name: production
+    url: http://$SERVER_HOST:3002
