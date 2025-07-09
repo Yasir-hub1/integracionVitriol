@@ -1,0 +1,76 @@
+.job-html-info {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.25rem;
+}
+
+.html-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  flex-wrap: wrap;
+}
+
+.btn-view-html, .btn-view-raw, .btn-download {
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-view-html {
+  background: #3b82f6;
+  color: white;
+}
+
+.btn-view-html:hover {
+  background: #2563eb;
+}
+
+.btn-view-raw {
+  background: #64748b;
+  color: white;
+}
+
+.btn-view-raw:hover {
+  background: #475569;
+}
+
+.btn-download {
+  background: #059669;
+  color: white;
+}
+
+.btn-download:hover {
+  background: #047857;
+}
+
+.html-preview {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 0.375rem;
+  border: 1px solid #e2e8f0;
+}
+
+.html-preview h4 {
+  margin: 0 0 0.5rem 0;
+  color: #1e293b;
+  font-size: 0.875rem;
+}
+
+.html-preview code {
+  display: block;
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 0.75rem;
+  border-radius: 0.25rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 150px;
+  overflow-y: auto;
+}
