@@ -7,7 +7,7 @@ import {
     Server, Hash, Play, Square, Pause, FileSpreadsheet, X, RotateCcw
 } from 'lucide-react';
 
-const API_URL = 'http://localhost:3001/api';
+const API_URL = 'http://159.223.196.3:3001/api';
 
 const App = () => {
     const [jobs, setJobs] = useState([]);
